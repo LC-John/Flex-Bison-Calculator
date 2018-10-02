@@ -59,6 +59,9 @@ LOG e FUNC	"ln"|"LN"
 EOL		\n
 EXIT		"exit"|"quit"
 ```
+
+Since priority is viable in Bison through "%left", the bison syntax grammar is shown as below.
+
 ```
 Bison Syntax Grammar (Note that white space is ignored)
 g	-> g e EOL		{ // Output the result }
