@@ -88,13 +88,64 @@ e	-> FLOAT_NUMBER		{ // Pass the value }
 		{ // log of e2 with the base of e1 }
 	| (ADD|SUB) e1		{ // Positive/negative of e1 }
 ```
+## Symbolic Calc
+
+Build the Inverse Polish Expression (IPE) Stack for each expression (with variables), and compute the output via the method of symbolic computation. All variables are initialized by 0.
+
+```
+Flex Grammer
+EXIT		"exit"|"quit"|"EXIT"|"QUIT"
+PRINT STACK	"print"|"PRINT"
+CALCULATE	"calc"|"CALC"
+RESET STACK	"reset"|"RESET"
+FLOAT NUMBER	[0-9]+(\.[0-9]+)?
+VARIABLE	[a-zA-Z]+
+ASSIGN		"="
+ADD		"+"
+SUB		"-"
+MUL		"*"
+DIV		"/"
+POW		"^"
+L BRACKET	"("
+R BRACKET	")"
+EOL		\n
+```
+
+Since priority is viable in Bison through "%left", the bison syntax grammar is shown as below.
+
+```
+Bison Syntax Grammar (Note that white space is ignored)
+g	-> g e EOL		{ // Build the stack, and then print the stack }
+	| g EOL 		{ // Do nothing }
+	| g PRINT_STACK EOL	{ // Print the stack }
+	| g VARIABLE ASSIGN FLOAT_NUMBER EOL
+		{ // Assign value to the variable }
+	| g CALCULATE EOL	{ // Calculate the IPE in the stack, and reset the stack }
+	| g RESET EOL		{ // Reset the stack }
+	| g EXIT EOL		{ // Exit }
+	| g EXIT 		{ // Exit }
+	| epsilon
+	;
+e	-> FLOAT_NUMBER		{ // Push the number into the stack }
+	| VARIABLE		{ // Push the variable into the stack }
+	| e1 ADD e2		{ // Push the add operation into the stack }
+	| e1 SUB e2		{ // Push the sub operation into the stack }
+	| e1 MUL e2		{ // Push the mul operation into the stack }
+	| e1 DIV e2		{ // Push the div operation into the stack }
+	| e1 POW e2		{ // Push the pow operation into the stack }
+	| L_BRACKET e1 R_BRACKET	{ // Do nothing }
+	| ADD e1		{ // Push the pos operation into the stack }
+	| SUB e1		{ // Push the neg operation into the stack }
+```
 
 ## How2Use
 
 Make the project using "make", and clean it using "make clean".
-There are 2 programs -- "echo" and "calc".
+There are 3 programs -- "echo", "calc" and "sym".
 **echo** is a program, using Flex to repeat the input expression.
-**calc** is a calculator, which implements "+", "-", "*", "/", "^"(power), trigonometric function and some other simple functions.
+**calc** is a calculator, which implements "+", "-", "*", "/", "^"(power), trigonometric function and some other simple functions. **sym** is a symbolic calculator, which supports variable defination and assignment. It builds an IPE stack for each expression, and execute symbolic computation upon the stack. It supports "+", "-", "*", "/", "^", and variable defination and assignment.
+
+This is a simple example.
 
 ```
 $ make		# Make the project
@@ -106,9 +157,43 @@ $ ./echo	# Run the echo program
 >> L NUM(1) ADD NUM(2) R MUL NUM(3) DIV NUM(4) EOL
 exit
 >> Bye!
-$ ./calc	# Run the calc program
+$ ./calc	# Run the numeric calc program
 log[2,(1+2)*3-1]
 = 3.000000
+exit
+>> Bye!
+$ ./sym		# Run the symbolic calc program
+1+(2-3)*4
+>> STACK| 1.000000 2.000000 3.000000 - 4.000000 * + |TOP
+calc
+>> NUM = 4.000000
+>> NUM = 3.000000
+>> NUM = 2.000000
+>> SUB = -1.000000
+>> MUL = -4.000000
+>> NUM = 1.000000
+>> ADD = -3.000000
+>> RES = -3.000000
+1+2
+>> STACK| 1.000000 2.000000 + |TOP
+reset
+print
+>> STACK| |TOP
+1+(a-b)*4
+>> STACK| 1.000000 a(0.000000) b(0.000000) - 4.000000 * + |TOP
+a=2
+b=3
+print
+>> STACK| 1.000000 a(2.000000) b(3.000000) - 4.000000 * + |TOP
+calc
+>> NUM = 4.000000
+>> SYM(b) = 3.000000
+>> SYM(a) = 2.000000
+>> SUB = -1.000000
+>> MUL = -4.000000
+>> NUM = 1.000000
+>> ADD = -3.000000
+>> RES = -3.000000
 exit
 >> Bye!
 $ make clean	# Clean the project

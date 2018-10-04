@@ -1,48 +1,63 @@
 #ifndef CT_H
 #define CT_H
 
-// Initialized
-#define H_INIT	0
-// Symbol/number
-#define H_NUM	1
-#define H_SYM	2
-// Unary operations (functions)
-#define H_ABS	11
-#define H_SIN	12
-#define H_COS	13
-#define H_TAN	14
-#define H_COT	15
-#define H_SEC	16
-#define H_CSC	17
-#define H_SQRT	18
-#define H_CEIL	19
-#define H_FLOOR	20
-// Binary operations (functions)
-#define H_LOG	1001
-#define H_ADD	1002
-#define H_SUB	1003
-#define H_MUL	1004
-#define H_DIV	1005
-#define H_POW	1006
+#include <stdio.h>
+#include <stdlib.h>
 
-typedef struct H__NODE__H
+// Initialized
+#define CT_INIT	0
+// Symbol/number
+#define CT_NUM	1
+#define CT_SYM	2
+// Unary arithmetic operations
+#define CT_POS	101
+#define CT_NEG	102
+// Binary arithmetic operations
+#define CT_ADD	1001
+#define CT_SUB	1002
+#define CT_MUL	1003
+#define CT_DIV	1004
+#define CT_POW	1005
+
+// State
+#define CT_ERR	-1	// Something wrong
+#define CT_NTH	0	// Nothing wrong
+
+int stack_state = CT_NTH;
+
+void reset_stack_state();
+int get_stack_state();
+
+struct CT_NODE
 {
 	int type;
 	char* name;
-	int complete;
-	int val;
-	H__NODE__H* chd1;
-	H__NODE__H* chd2;
-	H__NODE__H* prnt;
-} NODE;
+	double val;
+	struct CT_NODE* nxt;
+	struct CT_NODE* prv;
+};
 
-NODE* new_node();
-void reset_tree(NODE* root);
-void del_tree(NODE* root);
+struct CT_NODE* stack_bottom = NULL;
+struct CT_NODE* stack_top = NULL;
 
-double calculate(NODE* root);
-void set_op(NODE* root, int op);
-void set_sym(NODE* root, char* name);
-void set_num(NODE* root, double num);
+struct CT_NODE* new_node();
+void del_node(struct CT_NODE*);
 
-#endif CT_H
+void stack_build();
+void stack_clean();
+void stack_destroy();
+struct CT_NODE* get_stack_top();
+struct CT_NODE* get_stack_bottom();
+int is_stack_empty();
+
+void stack_push_op(int);
+void stack_push_num(double);
+void stack_push_sym(char*);
+
+struct CT_NODE* stack_pop();
+
+void stack_print();
+int stack_assign(struct CT_NODE*, char*, double, int);
+double stack_calc(int);
+
+#endif

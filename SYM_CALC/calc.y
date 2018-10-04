@@ -1,22 +1,16 @@
 %{
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
-#include "ct.h"
-#define YYSTYPE double
 int yylex(void);
 void yyerror(char*);
-
-NODE* root;
+double* double_carrier;
+char* string_carrier;
 %}
 
-%token NUM
+%token NUM SYM
 %token EOL
-%token SYM_PRNL SYM_PRNR SYM_COMMA
-%token FUNC_L FUNC_R
-%token FUNC_ABS FUNC_SIN FUNC_COS FUNC_TAN FUNC_COT FUNC_SEC FUNC_CSC FUNC_SQRT FUNC_CEIL FUNC_FLOOR
-%token FUNC_LOG FUNC_LOG10 FUNC_LOG7 FUNC_LOG5 FUNC_LOG3 FUNC_LOG2 FUNC_LN
-%token CMD_EXT
+%token SYM_PRNL SYM_PRNR
+%token CMD_EXIT CMD_CALC CMD_ASN CMD_RESET CMD_PRINT
 
 %left OP_ADD OP_SUB
 %left OP_MUL OP_DIV
@@ -24,37 +18,44 @@ NODE* root;
 
 %%
 
-g	: g e EOL { printf("= %lf\n", $2); }
+g	: g e EOL { stack_print(); }
 	| g EOL { printf("\n"); }
-	| g CMD_EXT { printf(">> Bye!\n"); exit(0); }
+	| g CMD_PRINT EOL { stack_print(); }
+	| g SYM CMD_ASN NUM EOL {
+		if (stack_assign(get_stack_bottom(), string_carrier, *double_carrier, 0) == 0)
+			printf ("\tUndefined variable\n");
+		free(string_carrier);
+		free(double_carrier);
+	}
+	| g CMD_CALC EOL  {
+		stack_calc(1);
+		if (get_stack_state() < 0)
+			printf("Some ERROR occurred...\n");
+		reset_stack_state();
+	}
+	| g CMD_RESET EOL { stack_clean(); }
+	| g CMD_EXIT EOL { printf(">> Bye!\n"); exit(0); } 
+	| g CMD_EXIT { printf(">> Bye!\n"); exit(0); }
 	|
 	;
-e	: NUM
-	| e OP_ADD e { $$ = $1 + $3; }
-	| e OP_SUB e { $$ = $1 - $3; }
-	| e OP_MUL e { $$ = $1 * $3; }
-	| e OP_DIV e { $$ = $1 / $3; }
-	| e OP_POW e { $$ = pow($1, $3); }
-	| SYM_PRNL e SYM_PRNR { $$ = $2; }
-	| FUNC_SQRT FUNC_L e FUNC_R { $$ = sqrt($3); }
-	| FUNC_CEIL FUNC_L e FUNC_R { $$ = ceil($3); }
-	| FUNC_FLOOR FUNC_L e FUNC_R { $$ = floor($3); }
-	| FUNC_ABS FUNC_L e FUNC_R { $$ = fabs($3); }
-	| FUNC_SIN FUNC_L e FUNC_R { $$ = sin($3); }
-	| FUNC_COS FUNC_L e FUNC_R { $$ = cos($3); }
-	| FUNC_TAN FUNC_L e FUNC_R { $$ = sin($3) / cos($3); }
-	| FUNC_COT FUNC_L e FUNC_R { $$ = cos($3) / sin($3); }
-	| FUNC_SEC FUNC_L e FUNC_R { $$ = 1 / cos($3); }
-	| FUNC_CSC FUNC_L e FUNC_R { $$ = 1 / sin($3); }
-	| FUNC_LOG10 FUNC_L e FUNC_R { $$ = log($3) / log(10); }
-	| FUNC_LOG7 FUNC_L e FUNC_R { $$ = log($3) / log(7); }
-	| FUNC_LOG5 FUNC_L e FUNC_R { $$ = log($3) / log(5); }
-	| FUNC_LOG3 FUNC_L e FUNC_R { $$ = log($3) / log(3); }
-	| FUNC_LOG2 FUNC_L e FUNC_R { $$ = log($3) / log(2); }
-	| FUNC_LN FUNC_L e FUNC_R { $$ = log($3); }
-	| FUNC_LOG FUNC_L e SYM_COMMA e FUNC_R { $$ = log($5) / log($3); }
-	| OP_ADD e { $$ = $2; }
-	| OP_SUB e { $$ = 0 - $2; }
+e	: NUM 
+{
+	stack_push_num(*double_carrier); 
+	free(double_carrier);
+}
+	| SYM
+{
+	stack_push_sym(string_carrier);
+	free(string_carrier);
+}
+	| e OP_ADD e { stack_push_op(1001); }
+	| e OP_SUB e { stack_push_op(1002); }
+	| e OP_MUL e { stack_push_op(1003); }
+	| e OP_DIV e { stack_push_op(1004); }
+	| e OP_POW e { stack_push_op(1005); }
+	| SYM_PRNL e SYM_PRNR { ; }
+	| OP_ADD e { stack_push_op(101); }
+	| OP_SUB e { stack_push_op(102); }
 	;
 %%
 
@@ -65,6 +66,8 @@ void yyerror(char *s)
 
 int main()
 {
+	stack_build();
 	yyparse();
+	stack_destroy();
 	return 0;
 }
