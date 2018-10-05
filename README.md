@@ -97,6 +97,7 @@ Flex Grammer
 EXIT		"exit"|"quit"|"EXIT"|"QUIT"
 PRINT STACK	"print"|"PRINT"
 CALCULATE	"calc"|"CALC"
+SHOW RESULT	"show"|"SHOW"
 RESET STACK	"reset"|"RESET"
 FLOAT NUMBER	[0-9]+(\.[0-9]+)?
 VARIABLE	[a-zA-Z]+
@@ -120,8 +121,9 @@ g	-> g e EOL		{ // Build the stack, and then print the stack }
 	| g PRINT_STACK EOL	{ // Print the stack }
 	| g VARIABLE ASSIGN FLOAT_NUMBER EOL
 		{ // Assign value to the variable }
-	| g CALCULATE EOL	{ // Calculate the IPE in the stack, and reset the stack }
-	| g RESET EOL		{ // Reset the stack }
+	| g CALCULATE EOL	{ // Calculate the IPE in the stack, and cache the result }
+	| g SHOW EOL		{ // Show the results }
+	| g RESET EOL		{ // Reset the IPE stack and the reulst cache }
 	| g EXIT EOL		{ // Exit }
 	| g EXIT 		{ // Exit }
 	| epsilon
@@ -142,8 +144,12 @@ e	-> FLOAT_NUMBER		{ // Push the number into the stack }
 
 Make the project using "make", and clean it using "make clean".
 There are 3 programs -- "echo", "calc" and "sym".
+
 **echo** is a program, using Flex to repeat the input expression.
-**calc** is a calculator, which implements "+", "-", "*", "/", "^"(power), trigonometric function and some other simple functions. **sym** is a symbolic calculator, which supports variable defination and assignment. It builds an IPE stack for each expression, and execute symbolic computation upon the stack. It supports "+", "-", "*", "/", "^", and variable defination and assignment.
+
+**calc** is a calculator, which implements "+", "-", "*", "/", "^"(power), trigonometric function and some other simple functions.
+
+**sym** is a symbolic calculator, which supports variable defination and assignment. It builds an IPE stack for each expression, and execute symbolic computation upon the IPE stack. It supports "+", "-", "*", "/", "^", and variable defination and assignment.
 
 This is a simple example.
 
@@ -164,36 +170,22 @@ exit
 >> Bye!
 $ ./sym		# Run the symbolic calc program
 1+(2-3)*4
->> STACK| 1.000000 2.000000 3.000000 - 4.000000 * + |TOP
+	<= Expr 0
 calc
->> NUM = 4.000000
->> NUM = 3.000000
->> NUM = 2.000000
->> SUB = -1.000000
->> MUL = -4.000000
->> NUM = 1.000000
->> ADD = -3.000000
->> RES = -3.000000
 1+2
->> STACK| 1.000000 2.000000 + |TOP
-reset
-print
->> STACK| |TOP
+	<= Expr 1
+calc
 1+(a-b)*4
->> STACK| 1.000000 a(0.000000) b(0.000000) - 4.000000 * + |TOP
+	<= Expr 2
 a=2
 b=3
 print
->> STACK| 1.000000 a(2.000000) b(3.000000) - 4.000000 * + |TOP
+>> STACK| 1.000000 a(2.000000) b(3.000000) - 4.000000 * + |TOP	<= Expr 2
 calc
->> NUM = 4.000000
->> SYM(b) = 3.000000
->> SYM(a) = 2.000000
->> SUB = -1.000000
->> MUL = -4.000000
->> NUM = 1.000000
->> ADD = -3.000000
->> RES = -3.000000
+show
+>> Expr 0 = -3.000000
+>> Expr 1 = 3.000000
+>> Expr 2 = -3.000000
 exit
 >> Bye!
 $ make clean	# Clean the project

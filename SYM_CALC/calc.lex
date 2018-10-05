@@ -49,6 +49,9 @@ void yyerror(char*);
 "print"|"PRINT" {
 	return CMD_PRINT;
 }
+"show"|"SHOW" {
+	return CMD_SHOW;
+}
 "calc"|"CALC" {
 	return CMD_CALC;
 }

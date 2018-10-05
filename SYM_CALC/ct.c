@@ -6,6 +6,7 @@
 
 void reset_stack_state() { stack_state = CT_NTH; }
 int get_stack_state() { return stack_state; }
+int get_n_result() { return n_result; }
 
 struct CT_NODE* new_node()
 {
@@ -43,6 +44,7 @@ void stack_clean()
 		del_node(tmp_node);
 		tmp_node = nxt_node;
 	}
+	n_result = 0;
 }
 
 void stack_destroy()
@@ -123,27 +125,30 @@ int stack_assign(struct CT_NODE* node, char* name, double val, int state)
 	return state;
 }
 
-double stack_calc(int first_flag)
+double stack_calc(int first_flag, int verbose)
 {
 	double ret = 0, op1 = 0, op2 = 0;
 	if (stack_top == stack_bottom)
 	{
 		stack_state = CT_ERR;
-		printf(">> <ERROR STATE>\n");
+		if (verbose > 0)
+			printf(">> <ERROR STATE>\n");
 		return ret;
 	}
 	switch(stack_top->type)
 	{
 	case CT_NUM:
 		ret = stack_top->val;
-		printf(">> NUM = %lf\n", stack_top->val);
+		if (verbose > 0)
+			printf(">> NUM = %lf\n", stack_top->val);
 		stack_top = stack_top->prv;
 		del_node(stack_top->nxt);
 		stack_top->nxt = NULL;
 		break;
 	case CT_SYM:
 		ret = stack_top->val;
-		printf(">> SYM(%s) = %lf\n", stack_top->name, stack_top->val);
+		if (verbose > 0)
+			printf(">> SYM(%s) = %lf\n", stack_top->name, stack_top->val);
 		stack_top = stack_top->prv;
 		del_node(stack_top->nxt);
 		stack_top->nxt = NULL;
@@ -152,67 +157,79 @@ double stack_calc(int first_flag)
 		stack_top = stack_top->prv;
 		del_node(stack_top->nxt);
 		stack_top->nxt = NULL;
-		ret = stack_calc(0);
-		printf(">> POS = %lf\n", ret);
+		ret = stack_calc(0, verbose);
+		if (verbose > 0)
+			printf(">> POS = %lf\n", ret);
 		break;
 	case CT_NEG:
 		stack_top = stack_top->prv;
 		del_node(stack_top->nxt);
 		stack_top->nxt = NULL;
-		ret = -stack_calc(0);
-		printf(">> NEG = %lf\n", ret);
+		ret = -stack_calc(0, verbose);
+		if (verbose > 0)
+			printf(">> NEG = %lf\n", ret);
 		break;
 	case CT_ADD:
 		stack_top = stack_top->prv;
 		del_node(stack_top->nxt);
 		stack_top->nxt = NULL;
-		ret = stack_calc(0)+stack_calc(0);
-		printf(">> ADD = %lf\n", ret);
+		ret = stack_calc(0, verbose) + stack_calc(0, verbose);
+		if (verbose > 0)
+			printf(">> ADD = %lf\n", ret);
 		break;
 	case CT_SUB:
 		stack_top = stack_top->prv;
 		del_node(stack_top->nxt);
 		stack_top->nxt = NULL;
-		op2 = stack_calc(0);
-		op1 = stack_calc(0);
+		op2 = stack_calc(0, verbose);
+		op1 = stack_calc(0, verbose);
 		ret = op1 - op2;
-		printf(">> SUB = %lf\n", ret);
+		if (verbose > 0)
+			printf(">> SUB = %lf\n", ret);
 		break;
 	case CT_MUL:
 		stack_top = stack_top->prv;
 		del_node(stack_top->nxt);
 		stack_top->nxt = NULL;
-		ret = stack_calc(0)*stack_calc(0);
-		printf(">> MUL = %lf\n", ret);
+		ret = stack_calc(0, verbose) * stack_calc(0, verbose);
+		if (verbose > 0)
+			printf(">> MUL = %lf\n", ret);
 		break;
 	case CT_DIV:
 		stack_top = stack_top->prv;
 		del_node(stack_top->nxt);
 		stack_top->nxt = NULL;
-		op2 = stack_calc(0);
-		op1 = stack_calc(0);
+		op2 = stack_calc(0, verbose);
+		op1 = stack_calc(0, verbose);
 		ret = op1 / op2;
-		printf(">> DIV = %lf\n", ret);
+		if (verbose > 0)
+			printf(">> DIV = %lf\n", ret);
 		break;
 	case CT_POW:
 		stack_top = stack_top->prv;
 		del_node(stack_top->nxt);
 		stack_top->nxt = NULL;
-		op2 = stack_calc(0);
-		op1 = stack_calc(0);
+		op2 = stack_calc(0, verbose);
+		op1 = stack_calc(0, verbose);
 		ret = pow(op1, op2);
-		printf(">> POW = %lf\n", ret);
+		if (verbose > 0)
+			printf(">> POW = %lf\n", ret);
 		break;
 	default:
 		stack_top = stack_top->prv;
 		del_node(stack_top->nxt);
 		stack_top->nxt = NULL;
 		stack_state = CT_ERR;
-		printf(">> <ERROR STATE>\n");
+		if (verbose > 0)
+			printf(">> <ERROR STATE>\n");
 		break;
 	}
 	if (first_flag > 0)
-		printf(">> RES = %lf\n", ret);
+	{
+		if (verbose > 0)
+			printf(">> RES = %lf\n", ret);
+		result[n_result++] = ret;
+	}
 	return ret;
 }
 
@@ -237,5 +254,12 @@ void stack_print()
 		}
 		tmp_node = tmp_node->nxt;
 	}
-	printf("|TOP\n");
+	printf("|TOP\t<= Expr %d\n", get_n_result());
+}
+
+void show_result()
+{
+	int i = 0;
+	for(i = 0; i < n_result; i++)
+		printf(">> Expr %d = %lf\n", i, result[i]);
 }

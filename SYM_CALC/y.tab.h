@@ -55,11 +55,12 @@ extern int yydebug;
     CMD_ASN = 265,
     CMD_RESET = 266,
     CMD_PRINT = 267,
-    OP_ADD = 268,
-    OP_SUB = 269,
-    OP_MUL = 270,
-    OP_DIV = 271,
-    OP_POW = 272
+    CMD_SHOW = 268,
+    OP_ADD = 269,
+    OP_SUB = 270,
+    OP_MUL = 271,
+    OP_DIV = 272,
+    OP_POW = 273
   };
 #endif
 /* Tokens.  */
@@ -73,11 +74,12 @@ extern int yydebug;
 #define CMD_ASN 265
 #define CMD_RESET 266
 #define CMD_PRINT 267
-#define OP_ADD 268
-#define OP_SUB 269
-#define OP_MUL 270
-#define OP_DIV 271
-#define OP_POW 272
+#define CMD_SHOW 268
+#define OP_ADD 269
+#define OP_SUB 270
+#define OP_MUL 271
+#define OP_DIV 272
+#define OP_POW 273
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED

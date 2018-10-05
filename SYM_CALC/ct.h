@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define MAX_RESULT_NUM 1024
+
 // Initialized
 #define CT_INIT	0
 // Symbol/number
@@ -24,9 +26,12 @@
 #define CT_NTH	0	// Nothing wrong
 
 int stack_state = CT_NTH;
+int n_result = 0;
+double result[MAX_RESULT_NUM] = {0};
 
 void reset_stack_state();
 int get_stack_state();
+int get_n_result();
 
 struct CT_NODE
 {
@@ -58,6 +63,7 @@ struct CT_NODE* stack_pop();
 
 void stack_print();
 int stack_assign(struct CT_NODE*, char*, double, int);
-double stack_calc(int);
+double stack_calc(int, int);
+void show_result();
 
 #endif
