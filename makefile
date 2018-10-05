@@ -15,6 +15,3 @@ clean:
 	make -C $(CALC_DIR) clean
 	make -C $(ECHO_DIR) clean
 	make -C $(SYM_DIR) clean
-	rm -rf $(TOP_DIR)/echo
-	rm -rf $(TOP_DIR)/calc
-	rm -rf $(TOP_DIR)/sym
