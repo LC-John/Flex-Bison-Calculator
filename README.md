@@ -1,6 +1,8 @@
 # Flex/Bison Calculator
 
-This is a lab project of Compiler, PKU.
+[![Build Status](https://travis-ci.org/LC-John/MiniC-Compiler.svg?branch=master)](https://travis-ci.org/LC-John/MiniC-Compiler)
+
+This is a lab project of Compiler Lab, EECS, PKU.
 It implements a calculator with Flex/Bison (Lex/YACC).
 
 ## Echo
