@@ -23,7 +23,7 @@ void yyerror(char*);
 
 g	: g e EOL { printf("= %lf\n", $2); }
 	| g EOL { printf("\n"); }
-	| g CMD_EXT { printf(">> Bye!\n"); exit(0); }
+	| g CMD_EXT { printf(">> Bye!\n"); YYACCEPT; }
 	|
 	;
 e	: NUM
@@ -52,6 +52,7 @@ e	: NUM
 	| FUNC_LOG FUNC_L e SYM_COMMA e FUNC_R { $$ = log($5) / log($3); }
 	| OP_ADD e { $$ = $2; }
 	| OP_SUB e { $$ = 0 - $2; }
+	| error { YYABORT; }
 	;
 %%
 
@@ -62,6 +63,7 @@ void yyerror(char *s)
 
 int main()
 {
-	yyparse();
+	int a = yyparse();
+	printf("%d", a);
 	return 0;
 }
