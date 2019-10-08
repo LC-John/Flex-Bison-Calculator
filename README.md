@@ -147,7 +147,7 @@ e	-> FLOAT_NUMBER		{ // Push the number into the stack }
 Make the project using "make", and clean it using "make clean".
 There are 3 programs -- "echo", "calc" and "sym".
 
-**echo** is a program, using Flex to repeat the input expression.
+**echo** is a program, utilizing Flex to repeat the input expression.
 
 **calc** is a calculator, which implements "+", "-", "*", "/", "^"(power), trigonometric function and some other simple functions.
 
